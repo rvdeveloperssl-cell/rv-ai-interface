@@ -48,7 +48,7 @@ if prompt := st.chat_input("RV AI එකෙන් ඕනෑම දෙයක් �
         
         try:
             # මෙතන 'rv-ai-core' යනු ඔබ දුන් container name එකයි
-            url = "http://rv-ai-core:11434/api/generate"
+            url = "http://172.17.0.1:11434/api/generate"
             payload = {"model": "llama3", "prompt": prompt, "stream": True}
             
             res = requests.post(url, json=payload, stream=True, timeout=10)
