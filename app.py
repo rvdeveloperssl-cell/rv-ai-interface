@@ -2,30 +2,36 @@ import streamlit as st
 import requests
 import json
 
-# --- 100% BRANDING ---
-st.set_page_config(page_title="RV AI - Personal Assistant", page_icon="https://i.postimg.cc/5y14PWfB/RV-AI.jpg")
+# --- 100% BRANDING & UI SETTINGS ---
+st.set_page_config(page_title="RV AI", page_icon="https://i.postimg.cc/5y14PWfB/RV-AI.jpg", layout="wide")
 
-# CSS පාවිච්චි කරලා පෙනුම වෙනස් කරමු (Custom Style)
+# Gemini/ChatGPT Style CSS
 st.markdown("""
     <style>
-    .main { background-color: #0e1117; color: white; }
-    .stTextInput { border-radius: 20px; }
-    .logo-text { font-size: 30px; font-weight: bold; color: #00aaff; }
+    .main { background-color: #131314; color: #e3e3e3; }
+    .stChatMessage { border-radius: 15px; padding: 15px; margin-bottom: 10px; }
+    .stChatFloatingInputContainer { background-color: #1e1f20; }
+    /* වටකුරු ලෝගෝ එක */
+    .logo-img { border-radius: 50%; border: 2px solid #00aaff; }
+    .stButton>button { border-radius: 20px; background-color: #00aaff; color: white; }
     </style>
     """, unsafe_allow_html=True)
 
-# Logo සහ Title
-col1, col2 = st.columns([1, 5])
+# Header Section
+col1, col2 = st.columns([1, 8])
 with col1:
-    st.image("https://i.postimg.cc/5y14PWfB/RV-AI.jpg", width=60)
+    st.image("https://i.postimg.cc/5y14PWfB/RV-AI.jpg", width=70) # ලෝගෝ එක
 with col2:
-    st.markdown('<p class="logo-text">RV AI LANKA</p>', unsafe_allow_html=True)
+    st.title("RV AI LANKA")
+    st.caption("Advanced AI Assistant by RV Developers")
+
+st.divider()
 
 # --- CHAT LOGIC ---
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# පරණ මැසේජ් පෙන්වීම
+# මැසේජ් පෙන්වීම
 for message in st.session_state.messages:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
@@ -36,29 +42,33 @@ if prompt := st.chat_input("RV AI එකෙන් ඕනෑම දෙයක් �
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    # Ollama එකට කතා කිරීම
     with st.chat_message("assistant"):
         response_placeholder = st.empty()
         full_response = ""
         
-        # මෙතන 'ollama' කියන්නේ ඔබේ coolify service එකේ නම
-        url = "http://ollama:11434/api/generate"
-        payload = {"model": "llama3", "prompt": prompt, "stream": True}
-        
-        res = requests.post(url, json=payload, stream=True)
-        for line in res.iter_lines():
-            if line:
-                chunk = json.loads(line)
-                full_response += chunk.get("response", "")
-                response_placeholder.markdown(full_response + "▌")
-        
-        response_placeholder.markdown(full_response)
+        try:
+            # මෙතන 'rv-ai-core' යනු ඔබ දුන් container name එකයි
+            url = "http://rv-ai-core:11434/api/generate"
+            payload = {"model": "llama3", "prompt": prompt, "stream": True}
+            
+            res = requests.post(url, json=payload, stream=True, timeout=10)
+            for line in res.iter_lines():
+                if line:
+                    chunk = json.loads(line)
+                    full_response += chunk.get("response", "")
+                    response_placeholder.markdown(full_response + "▌")
+            
+            response_placeholder.markdown(full_response)
+        except Exception as e:
+            st.error(f"Ollama සම්බන්ධ කරගැනීමට නොහැකි විය. කරුණාකර 'rv-ai-core' සේවාව ක්‍රියාත්මකදැයි බලන්න.")
+            full_response = "Error: Connection failed."
+
     st.session_state.messages.append({"role": "assistant", "content": full_response})
 
-# --- SETTINGS & HISTORY (SIDEBAR) ---
+# Sidebar
 with st.sidebar:
-    st.title("RV AI Settings")
-    st.info("Powered by RV Developers")
-    if st.button("Clear Chat History"):
+    st.image("https://i.postimg.cc/5y14PWfB/RV-AI.jpg", width=150)
+    st.header("RV AI Control")
+    if st.button("Clear Chat"):
         st.session_state.messages = []
         st.rerun()
