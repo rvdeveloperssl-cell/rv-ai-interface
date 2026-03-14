@@ -120,7 +120,7 @@ if prompt := st.chat_input("Message RV AI..."):
         
         try:
             url = "http://65.108.212.204:11434/api/generate"
-            payload = {"model": "llama3", "prompt": prompt, "stream": False}
+            payload = {"model": "phi3", "prompt": prompt, "stream": False}
             
             res = requests.post(url, json=payload, timeout=60)
             if res.status_code == 200:
